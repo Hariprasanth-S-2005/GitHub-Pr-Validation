@@ -1,12 +1,55 @@
-name: PR Checklist Validation
+name: Validate PR Title
 
 on:
   pull_request:
-    types: [opened, edited, synchronize]
+    branches:
+      - main
+      - abc
+    types:
+      - opened
+      - edited
+      - synchronize
+      - reopened
+
+permissions:
+  contents: read
 
 jobs:
-  validate-checklist:
+  validate-title:
     runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate PR Title Format
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          TITLE="${{ github.event.pull_request.title }}"
+          BRANCH="${{ github.head_ref }}"
+
+          echo "PR Branch: $BRANCH"
+          echo "PR Title: $TITLE"
+
+          # Convert branch name to lowercase for case-insensitive matching
+          BRANCH_LOWER="${BRANCH,,}"
+
+          # Skip title validation for hotfix branches
+          if [[ "$BRANCH_LOWER" =~ hotfix ]]; then
+            echo "✅ Hotfix branch detected. Skipping PR title validation."
+            exit 0
+          fi
+
+          # Required format:
+          # <description> - Release Card ID: R12345
+          REGEX='^.+R[0-9]+$'
+
+          if [[ ! "$TITLE" =~ $REGEX ]]; then
+            echo "::error::PR title must follow the format: '<description> - Release Card ID: R<number>'"
+            echo "::error::Example: Fix login issue - Release Card ID: R12345"
+            exit 1
+          fi
+
+          echo "✅ PR title validation passed"
 
     steps:
       - name: Check PR checklist
@@ -22,31 +65,3 @@ jobs:
                 `There are ${unchecked.length} unchecked checklist items in the PR description.`
               );
             }
-
-      - name: Validate PR Title Format
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          TITLE="${{ github.event.pull_request.title }}"
-          BRANCH="${{ github.head_ref }}"
-
-          echo "PR Branch: $BRANCH"
-          echo "PR Title: $TITLE"
-
-          BRANCH_LOWER="${BRANCH,,}"
-
-          if [[ "$BRANCH_LOWER" =~ hotfix ]]; then
-            echo "✅ Hotfix branch detected. Skipping PR title validation."
-            exit 0
-          fi
-
-          REGEX='^.+ - Release Card ID: R[0-9]+$'
-
-          if [[ ! "$TITLE" =~ $REGEX ]]; then
-            echo "::error::PR title must follow the format: '<description> - Release Card ID: R<number>'"
-            echo "::error::Example: Fix login issue - Release Card ID: R12345"
-            exit 1
-          fi
-
-          echo "✅ PR title validation passed"
