@@ -16,18 +16,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Essential: gathers historical commit payloads
+          fetch-depth: 0
 
+      # Automatically installs the latest stable version of the Gitleaks binary safely
       - name: Install Gitleaks
-        run: |
-          wget -q https://github.com
-          tar -xzf gitleaks_linux_x64.tar.gz
-          sudo mv gitleaks /usr/local/bin/
+        uses: gitleaks/gitleaks-action@v2
+        with:
+          run-scan: false # Prevents it from running the default action scan so you can use your custom CLI commands below
 
       - name: Run Gitleaks
         run: |
           gitleaks detect \
             --source="." \
+            --config=".gitleaks.toml" \
             --report-format=sarif \
             --report-path=results.sarif \
             --verbose
