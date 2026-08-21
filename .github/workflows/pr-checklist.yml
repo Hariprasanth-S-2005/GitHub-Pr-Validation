@@ -7,7 +7,7 @@ on:
       - abc
     types:
       - opened
-      - edited
+      # - edited
       # - synchronize
       - reopened
 
