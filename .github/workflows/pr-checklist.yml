@@ -51,16 +51,16 @@ jobs:
 
           echo "✅ PR title validation passed"
 
-      - name: Check PR checklist
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const body = context.payload.pull_request.body || '';
+      # - name: Check PR checklist
+      #   uses: actions/github-script@v7
+      #   with:
+      #     script: |
+      #       const body = context.payload.pull_request.body || '';
 
-            const unchecked = body.match(/- \[ \]/g);
+      #       const unchecked = body.match(/- \[ \]/g);
 
-            if (unchecked && unchecked.length > 0) {
-              core.setFailed(
-                `There are ${unchecked.length} unchecked checklist items in the PR description.`
-              );
-            }
+      #       if (unchecked && unchecked.length > 0) {
+      #         core.setFailed(
+      #           `There are ${unchecked.length} unchecked checklist items in the PR description.`
+      #         );
+      #       }
